@@ -21,25 +21,25 @@ func main() {
 	maxConnection = *flag.Int("n", 100, "-n=100")
 	wg := sync.WaitGroup{}
 	ch := make(chan int, maxConnection)
-	start := time.Now()
 
 	for i := 0; i< iterCount; i++ {
 		ch <- 1
 		wg.Add(1)
-		go func(index int64, c chan int, t time.Time) {
+		go func(index int64, cc chan int) {
 			defer wg.Done()
+			start := time.Now()
 			PingTest(index)
-			defer flushChan(c, t, index)
-		}(int64(i), ch, start)
+			defer flushChan(cc, start)
+		}(int64(i), ch)
 	}
 	wg.Wait()
 }
 
-func flushChan(ch chan int, t time.Time, i int64) {
+func flushChan(ch chan int, t time.Time) {
 	<-ch
 	elapsed := time.Since(t)
-	kk := float64(i) / elapsed.Seconds()
-	fmt.Println("======= maxConnection", maxConnection, "=======", time.Now(), " i == ", i, " qps ==", kk)
+	kk := float64(1) / elapsed.Seconds()
+	fmt.Println("======= maxConnection", maxConnection, "=======", time.Now(), " qps ==", kk)
 }
 
 func dnsAQuery(i int64){
